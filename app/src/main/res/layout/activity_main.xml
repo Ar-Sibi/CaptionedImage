@@ -8,6 +8,34 @@
     tools:context="arsibi_has_no_website.captionedimage.MainActivity">
 
     <RelativeLayout
+        android:layout_width="match_parent"
+        android:id="@+id/intentrelativelayout"
+        android:layout_height="match_parent"
+        android:layout_weight="0.1"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="91dp"
+            android:onClick="sendToCamera"
+            app:srcCompat="@android:drawable/ic_menu_camera" />
+
+        <ImageButton
+            android:id="@+id/gallery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/camera"
+            android:onClick="sendToGallery"
+            android:layout_marginEnd="81dp"
+            app:srcCompat="@android:drawable/ic_menu_report_image" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/additionrellayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -68,6 +96,15 @@
             android:layout_marginEnd="54dp"
             android:onClick="removeItems"
             app:srcCompat="@android:drawable/ic_delete" />
+
+        <ImageButton
+            android:id="@+id/imageButton4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/remove"
+            android:layout_centerHorizontal="true"
+            android:onClick="cropper"
+            app:srcCompat="@android:drawable/ic_menu_crop" />
     </RelativeLayout>
 
 </LinearLayout>

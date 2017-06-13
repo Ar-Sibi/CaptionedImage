@@ -32,14 +32,19 @@ import java.util.List;
 import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int GALLERY_REQUEST=1203;
+    public static final int GALLERY_REQUEST=1;
+    public static final int CAMERA_REQUEST=2;
+    public static final int CROP_THIS=3;
     ListView lv;
     RelativeLayout additionRelativeLayout;
+    RelativeLayout intentRelativeLayout;
     RelativeLayout bottomLayout;
     EditText addtv;
     ImageCaptionAdapter adapter;
+    int selectedindex=0;
     static List<ImageText> captionimg= new ArrayList<>();
     boolean delete=false;
+    boolean crop=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().hide();
         bottomLayout=(RelativeLayout)findViewById(R.id.bottombuttonrellayout);
         additionRelativeLayout=(RelativeLayout)findViewById(R.id.additionrellayout);
+        intentRelativeLayout=(RelativeLayout)findViewById(R.id.intentrelativelayout);
         addtv=(EditText)findViewById(R.id.addedtext);
         lv=(ListView)findViewById(R.id.image_caption_list);
         adapter = new ImageCaptionAdapter(getApplicationContext(),R.layout.image_text,captionimg);
@@ -61,11 +67,23 @@ public class MainActivity extends AppCompatActivity {
                     delete=false;
                 }
                 else{
+                    if(crop==true){
+                        cropThis(position);
+                        selectedindex=position;
+                    }
+                    else
                     captionimg.get(position).switchViews();
                 }
+                crop=false;
                 delete=false;
             }
         });
+    }
+    public void cropThis(int index){
+        Intent intent=new Intent(this,CropperHandler.class);
+        intent.putExtra("index",index);
+        startActivity(intent);
+
     }
     public void loadData(){
         File f=new File(this.getFilesDir(),"hello1.txt");
@@ -83,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
             s.close();
             adapter.notifyDataSetChanged();
         }catch (IOException e){
-            Log.d("WOO",e.toString());
         }
     }
     @Override
@@ -108,41 +125,43 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void addItems(View v){
-        Intent galleryintent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        Intent cameraintent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        Intent choose=new Intent(Intent.ACTION_CHOOSER);
-        choose.putExtra(Intent.EXTRA_INTENT,cameraintent);
-        choose.putExtra(Intent.EXTRA_TITLE,"Gallery");
-        Intent[] intents = {galleryintent};
-        choose.putExtra(Intent.EXTRA_INITIAL_INTENTS,intents);
-        startActivityForResult(choose,GALLERY_REQUEST);
+        intentRelativeLayout.setVisibility(LinearLayout.VISIBLE);
     }
-
+    public void sendToCamera(View v){
+        intentRelativeLayout.setVisibility(LinearLayout.GONE);
+        Intent cameraintent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(cameraintent,CAMERA_REQUEST);
+    }
+    public void sendToGallery(View v){
+        intentRelativeLayout.setVisibility(LinearLayout.GONE);
+        Intent galleryintent = new Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryintent,GALLERY_REQUEST);
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-    if(requestCode==GALLERY_REQUEST&&resultCode== Activity.RESULT_OK){
-        Uri  selectedImage=data.getData();
-        if(selectedImage!=null) {
-            String[] filepathcolumn = {MediaStore.Images.Media.DATA};
-            Cursor cursor = getContentResolver().query(selectedImage, filepathcolumn, null, null, null);
-            cursor.moveToFirst();
-            int columnindex = cursor.getColumnIndex(filepathcolumn[0]);
-            String picturepath = cursor.getString(columnindex);
-            cursor.close();
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                if (bitmap != null) {
-                    ImageText t = new ImageText();
-                    t.image = bitmap;
-                    t.filepath = picturepath;
-                    captionimg.add(t);
-                    getCaption();
-                }
-            } catch (IOException e) {
+        if(requestCode==GALLERY_REQUEST&&resultCode== Activity.RESULT_OK) {
+            Uri selectedImage = data.getData();
+            if (selectedImage != null) {
+                String[] filepathcolumn = {MediaStore.Images.Media.DATA};
+                Cursor cursor = getContentResolver().query(selectedImage, filepathcolumn, null, null, null);
+                cursor.moveToFirst();
+                int columnindex = cursor.getColumnIndex(filepathcolumn[0]);
+                String picturepath = cursor.getString(columnindex);
+                cursor.close();
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
+                    if (bitmap != null) {
+                        ImageText t = new ImageText();
+                        t.image = bitmap;
+                        t.filepath = picturepath;
+                        captionimg.add(t);
+                        getCaption();
+                    }
+                } catch (IOException e) {}
             }
         }
-        else{
+        if(requestCode==CAMERA_REQUEST&&resultCode== Activity.RESULT_OK){
             Bitmap bit;
             Cursor cursor=getApplicationContext().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,new String[]{MediaStore.Images.Media.DATA,MediaStore.Images.Media.DATE_ADDED,MediaStore.Images.ImageColumns.ORIENTATION},MediaStore.Images.Media.DATE_ADDED,null,"date_added DESC");
             cursor.moveToFirst();
@@ -157,7 +176,16 @@ public class MainActivity extends AppCompatActivity {
                 getCaption();
             }
         }
+        if(requestCode==CROP_THIS&&requestCode==Activity.RESULT_OK){
+            Bundle extras=data.getExtras();
+            Bitmap bit=extras.getParcelable("data");
+            captionimg.get(selectedindex).image=bit;
+            adapter.notifyDataSetChanged();
+        }
+
     }
+    public void cropper(View v){
+        crop=true;
     }
     public void getCaption(){
         additionRelativeLayout.setVisibility(LinearLayout.VISIBLE);
