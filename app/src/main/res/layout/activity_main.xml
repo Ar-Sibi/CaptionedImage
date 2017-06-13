@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="arsibi_has_no_website.captionedimage.MainActivity">
+
+    <RelativeLayout
+        android:id="@+id/additionrellayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_weight="0.1">
+
+        <ImageButton
+            android:id="@+id/textaddbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:onClick="addCaption"
+            app:srcCompat="@android:drawable/ic_input_add" />
+
+        <EditText
+            android:id="@+id/addedtext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@+id/textaddbutton"
+            android:ems="10"
+            android:hint="Enter Caption"
+            android:inputType="none|textPersonName" />
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/image_caption_list"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_weight="7"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp" />
+
+    <RelativeLayout
+        android:id="@+id/bottombuttonrellayout"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_weight="1">
+
+        <ImageButton
+            android:id="@+id/add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="67dp"
+            android:onClick="addItems"
+            app:srcCompat="@android:drawable/ic_input_add" />
+
+        <ImageButton
+            android:id="@+id/remove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@+id/add"
+            android:layout_marginEnd="54dp"
+            android:onClick="removeItems"
+            app:srcCompat="@android:drawable/ic_delete" />
+    </RelativeLayout>
+
+</LinearLayout>
