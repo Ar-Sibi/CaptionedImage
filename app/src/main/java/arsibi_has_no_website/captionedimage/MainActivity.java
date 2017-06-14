@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         lv=(ListView)findViewById(R.id.image_caption_list);
         adapter = new ImageCaptionAdapter(getApplicationContext(),R.layout.image_text,captionimg);
         lv.setAdapter(adapter);
+        if(getIntent()==null)
         loadData();
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -109,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void cropThis(int index){
         Intent intent=new Intent(this,CropperHandler.class);
-        intent.putExtra("index",index);
+        intent.putExtra(Constants.INDEX,index);
         startActivityForResult(intent,Constants.CROP_THIS);
     }
     public void loadData(){

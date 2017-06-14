@@ -27,11 +27,14 @@ public class CropperHandler extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent=getIntent();
+        index=intent.getIntExtra(Constants.INDEX,0);
+        Log.d("MOO",String.format("%d",index));
         drawing=new DrawingView(getApplicationContext());
         setContentView(drawing);
         getSupportActionBar().hide();
-        Intent intent=getIntent();
-        index=intent.getIntExtra("index",0);
+
+
     }
     class DrawingView extends View implements Runnable,GestureDetector.OnGestureListener,GestureDetector.OnDoubleTapListener{
         Handler handler = new Handler(){
