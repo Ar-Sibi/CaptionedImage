@@ -1,13 +1,17 @@
 package arsibi_has_no_website.captionedimage;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,14 +31,16 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import static android.os.Build.VERSION.SDK_INT;
+import static android.os.Build.VERSION_CODES.M;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int GALLERY_REQUEST=1;
-    public static final int CAMERA_REQUEST=2;
-    public static final int CROP_THIS=3;
+
     ListView lv;
     RelativeLayout additionRelativeLayout;
     RelativeLayout intentRelativeLayout;
@@ -50,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
+        getPermissions();
         bottomLayout=(RelativeLayout)findViewById(R.id.bottombuttonrellayout);
         additionRelativeLayout=(RelativeLayout)findViewById(R.id.additionrellayout);
         intentRelativeLayout=(RelativeLayout)findViewById(R.id.intentrelativelayout);
@@ -79,11 +86,31 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    public void getPermissions() {
+        Log.d("MOO","cu");
+        if(SDK_INT>= M)
+        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    Constants.REQUEST_WRITE_EXTERNAL);
+        }
+        else Log.d("MOO","cu");
+        else ;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case Constants.REQUEST_WRITE_EXTERNAL:if(grantResults[0]==PackageManager.PERMISSION_GRANTED);
+                else
+                    getPermissions();
+        }
+    }
+
     public void cropThis(int index){
         Intent intent=new Intent(this,CropperHandler.class);
         intent.putExtra("index",index);
-        startActivity(intent);
-
+        startActivityForResult(intent,Constants.CROP_THIS);
     }
     public void loadData(){
         File f=new File(this.getFilesDir(),"hello1.txt");
@@ -130,17 +157,17 @@ public class MainActivity extends AppCompatActivity {
     public void sendToCamera(View v){
         intentRelativeLayout.setVisibility(LinearLayout.GONE);
         Intent cameraintent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(cameraintent,CAMERA_REQUEST);
+        startActivityForResult(cameraintent,Constants.CAMERA_REQUEST);
     }
     public void sendToGallery(View v){
         intentRelativeLayout.setVisibility(LinearLayout.GONE);
         Intent galleryintent = new Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryintent,GALLERY_REQUEST);
+        startActivityForResult(galleryintent,Constants.GALLERY_REQUEST);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==GALLERY_REQUEST&&resultCode== Activity.RESULT_OK) {
+        if(requestCode==Constants.GALLERY_REQUEST&&resultCode== Activity.RESULT_OK) {
             Uri selectedImage = data.getData();
             if (selectedImage != null) {
                 String[] filepathcolumn = {MediaStore.Images.Media.DATA};
@@ -161,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {}
             }
         }
-        if(requestCode==CAMERA_REQUEST&&resultCode== Activity.RESULT_OK){
+        if(requestCode==Constants.CAMERA_REQUEST&&resultCode== Activity.RESULT_OK){
             Bitmap bit;
             Cursor cursor=getApplicationContext().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,new String[]{MediaStore.Images.Media.DATA,MediaStore.Images.Media.DATE_ADDED,MediaStore.Images.ImageColumns.ORIENTATION},MediaStore.Images.Media.DATE_ADDED,null,"date_added DESC");
             cursor.moveToFirst();
@@ -176,13 +203,40 @@ public class MainActivity extends AppCompatActivity {
                 getCaption();
             }
         }
-        if(requestCode==CROP_THIS&&requestCode==Activity.RESULT_OK){
-            Bundle extras=data.getExtras();
-            Bitmap bit=extras.getParcelable("data");
-            captionimg.get(selectedindex).image=bit;
+        if(requestCode==Constants.CROP_THIS&&resultCode==Activity.RESULT_OK){
+            int xbeg=data.getIntExtra(Constants.X_START,0);
+            int ybeg=data.getIntExtra(Constants.Y_START,0);
+            int xend=data.getIntExtra(Constants.X_END,0);
+            int yend=data.getIntExtra(Constants.Y_END,0);
+            int index=data.getIntExtra(Constants.INDEX,0);
+            Bitmap b= captionimg.get(index).image;
+            xbeg*=b.getWidth();
+            xbeg/=800;
+            ybeg*=b.getHeight();
+            ybeg/=800;
+            xend*=b.getWidth();
+            xend/=800;
+            yend*=b.getHeight();
+            yend/=800;
+            Log.d("MOO",String.format("%d   %d",xend-xbeg,b.getWidth()));
+            Bitmap newB=Bitmap.createBitmap(b,xbeg,ybeg,xend-xbeg,yend-ybeg);
+            captionimg.get(index).image=newB;
+            captionimg.get(index).filepath=writeBitmapToFile(newB);
             adapter.notifyDataSetChanged();
+            Toast.makeText(getApplicationContext(),"Crop Successful",Toast.LENGTH_SHORT).show();
         }
-
+    }
+    public String writeBitmapToFile(Bitmap bmp){
+        String TimeStamp=new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File file=new File(getFilesDir(),TimeStamp+"pic.png");
+        try {
+            file.createNewFile();
+            FileOutputStream f=new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.PNG,85,f);
+            f.flush();
+            f.close();
+        }catch (IOException e){}
+        return file.getAbsolutePath();
     }
     public void cropper(View v){
         crop=true;

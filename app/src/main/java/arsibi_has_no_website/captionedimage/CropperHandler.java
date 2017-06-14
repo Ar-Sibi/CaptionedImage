@@ -13,6 +13,7 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,9 +29,9 @@ public class CropperHandler extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         drawing=new DrawingView(getApplicationContext());
         setContentView(drawing);
+        getSupportActionBar().hide();
         Intent intent=getIntent();
         index=intent.getIntExtra("index",0);
-
     }
     class DrawingView extends View implements Runnable,GestureDetector.OnGestureListener,GestureDetector.OnDoubleTapListener{
         Handler handler = new Handler(){
@@ -43,6 +44,8 @@ public class CropperHandler extends AppCompatActivity {
         Paint bmpPaint;
         Paint linePaint;
         Bitmap bmp;
+        Paint holderPaint;
+        Paint textPaint;
         boolean down=false;
         int xbeg=50;
         int ybeg=50;
@@ -52,14 +55,23 @@ public class CropperHandler extends AppCompatActivity {
             super(context);
             bmpPaint=new Paint();
             bmpPaint.setAntiAlias(true);
+            textPaint=new Paint();
+            textPaint.setColor(Color.GREEN);
+            textPaint.setStyle(Paint.Style.STROKE);
+            textPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,20,getResources().getDisplayMetrics()));
             linePaint=new Paint();
             linePaint.setColor(Color.GREEN);
             linePaint.setStyle(Paint.Style.STROKE);
+            holderPaint=new Paint();
+            holderPaint.setStyle(Paint.Style.FILL);
+            holderPaint.setColor(Color.RED);
+
             bmp=Bitmap.createScaledBitmap(captionimg.get(index).image,800,800,false);
             g=new GestureDetectorCompat(context,this);
             g.setOnDoubleTapListener(this);
             Thread t = new Thread(this);
             t.start();
+            Toast.makeText(getApplicationContext(),"Double Tap to Save Changes",Toast.LENGTH_LONG);
         }
 
         @Override
@@ -68,11 +80,11 @@ public class CropperHandler extends AppCompatActivity {
             if(event.getAction()==MotionEvent.ACTION_UP)
                 down=false;
             else{
-                if(Math.abs(event.getX()-xbeg)<30&&Math.abs(event.getY()-ybeg)<30) {
+                if(Math.abs(event.getX()-xbeg)<35&&Math.abs(event.getY()-ybeg)<35&&event.getX()>50&&event.getY()>50) {
                     xbeg = (int) Math.floor(event.getX());
                     ybeg = (int) Math.floor(event.getY());
                 }
-                if(Math.abs(event.getX()-xend)<30&&Math.abs(event.getY()-yend)<30) {
+                if(Math.abs(event.getX()-xend)<35&&Math.abs(event.getY()-yend)<35&&event.getX()<850&&event.getY()<850) {
                     xend = (int) Math.floor(event.getX());
                     yend = (int) Math.floor(event.getY());
                 }
@@ -84,6 +96,9 @@ public class CropperHandler extends AppCompatActivity {
             super.onDraw(canvas);
             canvas.drawBitmap(bmp,50,50,bmpPaint);
             canvas.drawRect(xbeg,ybeg,xend,yend,linePaint);
+            canvas.drawCircle(xbeg,ybeg,20,holderPaint);
+            canvas.drawCircle(xend,yend,20,holderPaint);
+            canvas.drawText("Double Tap Here to Save",0,1100,textPaint);
         }
         @Override
         public void run(){
@@ -103,6 +118,16 @@ public class CropperHandler extends AppCompatActivity {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             Log.d("MOO","Double");
+            if(e.getY()>900) {
+                Intent data = new Intent();
+                data.putExtra(Constants.X_START, xbeg - 50);
+                data.putExtra(Constants.Y_START, ybeg - 50);
+                data.putExtra(Constants.X_END, xend - 50);
+                data.putExtra(Constants.Y_END, yend - 50);
+                data.putExtra(Constants.INDEX, index);
+                setResult(RESULT_OK, data);
+                finish();
+            }
             return false;
         }
         @Override
