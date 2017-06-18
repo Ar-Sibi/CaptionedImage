@@ -64,8 +64,10 @@ public class MainActivity extends AppCompatActivity {
         lv=(ListView)findViewById(R.id.image_caption_list);
         adapter = new ImageCaptionAdapter(getApplicationContext(),R.layout.image_text,captionimg);
         lv.setAdapter(adapter);
-        if(getIntent()==null)
+        if(getIntent().hasCategory(Intent.CATEGORY_LAUNCHER))
         loadData();
+        else
+            Log.d("MOO",getIntent().toString());
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -88,15 +90,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     public void getPermissions() {
-        Log.d("MOO","cu");
         if(SDK_INT>= M)
         if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     Constants.REQUEST_WRITE_EXTERNAL);
         }
-        else Log.d("MOO","cu");
-        else ;
+
     }
 
     @Override
@@ -115,11 +115,14 @@ public class MainActivity extends AppCompatActivity {
     }
     public void loadData(){
         File f=new File(this.getFilesDir(),"hello1.txt");
+        Log.d("MOO","cu");
         try {
+            Log.d("MOO","cu");
             if(!f.exists())
             f.createNewFile();
             Scanner s = new Scanner(f);
             while(s.hasNext()){
+                Log.d("MOO","cu");
                 ImageText t=new ImageText();
                 t.filepath=s.nextLine();
                 t.text=s.nextLine();
@@ -128,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             }
             s.close();
             adapter.notifyDataSetChanged();
-        }catch (IOException e){
+        }catch (IOException e){Log.d("MOO","cu2");
         }
     }
     @Override

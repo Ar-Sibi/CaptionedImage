@@ -29,12 +29,9 @@ public class CropperHandler extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Intent intent=getIntent();
         index=intent.getIntExtra(Constants.INDEX,0);
-        Log.d("MOO",String.format("%d",index));
         drawing=new DrawingView(getApplicationContext());
         setContentView(drawing);
         getSupportActionBar().hide();
-
-
     }
     class DrawingView extends View implements Runnable,GestureDetector.OnGestureListener,GestureDetector.OnDoubleTapListener{
         Handler handler = new Handler(){
@@ -141,7 +138,7 @@ public class CropperHandler extends AppCompatActivity {
 
         @Override
         public boolean onDown(MotionEvent e) {
-            Log.d("MOO","fuk");
+            Log.d("MOO","no");
             return true;
         }
         @Override
