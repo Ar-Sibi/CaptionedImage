@@ -16,9 +16,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-/**
- * Created by hp on 11-06-2017.
- */
+
 
 public class ImageCaptionAdapter extends ArrayAdapter<ImageText>
 {
@@ -40,11 +38,13 @@ public class ImageCaptionAdapter extends ArrayAdapter<ImageText>
         else
             v= inflater.inflate(R.layout.image_text,parent,false);
         String s=MainActivity.captionimg.get(position).text;
-        Bitmap I=MainActivity.captionimg.get(position).image;
+        final Bitmap I=Bitmap.createScaledBitmap(MainActivity.captionimg.get(position).image,200,200,true);
         MainActivity.captionimg.get(position).tv=((TextView)v.findViewById(R.id.caption));
         MainActivity.captionimg.get(position).img=((ImageView)v.findViewById(R.id.image));
         MainActivity.captionimg.get(position).tv.setText(s);
         MainActivity.captionimg.get(position).img.setImageBitmap(I);
+
+
         if(MainActivity.captionimg.get(position).checker==false)
             MainActivity.captionimg.get(position).switchViews();
         if(MainActivity.captionimg.get(position).checker==true){

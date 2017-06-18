@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,11 +38,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import android.os.Handler;
+
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.M;
 
 public class MainActivity extends AppCompatActivity {
 
+    static List<ImageText> captionimg= new ArrayList<>();
     ListView lv;
     RelativeLayout additionRelativeLayout;
     RelativeLayout intentRelativeLayout;
@@ -48,9 +53,14 @@ public class MainActivity extends AppCompatActivity {
     EditText addtv;
     ImageCaptionAdapter adapter;
     int selectedindex=0;
-    static List<ImageText> captionimg= new ArrayList<>();
     boolean delete=false;
     boolean crop=false;
+    Handler handler=new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            adapter.notifyDataSetChanged();
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +112,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
-            case Constants.REQUEST_WRITE_EXTERNAL:if(grantResults[0]==PackageManager.PERMISSION_GRANTED);
+            case Constants.REQUEST_WRITE_EXTERNAL:
+                if(grantResults[0]==PackageManager.PERMISSION_GRANTED);
                 else
                     getPermissions();
         }
@@ -114,25 +125,35 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent,Constants.CROP_THIS);
     }
     public void loadData(){
-        File f=new File(this.getFilesDir(),"hello1.txt");
         Log.d("MOO","cu");
-        try {
-            Log.d("MOO","cu");
-            if(!f.exists())
-            f.createNewFile();
-            Scanner s = new Scanner(f);
-            while(s.hasNext()){
+        Runnable runnable=new Runnable() {
+                @Override
+                public void run() {
+                File f=new File(MainActivity.this.getFilesDir(),"hello1.txt");
                 Log.d("MOO","cu");
-                ImageText t=new ImageText();
-                t.filepath=s.nextLine();
-                t.text=s.nextLine();
-                t.image=BitmapFactory.decodeFile(t.filepath);
-                captionimg.add(t);
+                try {
+                    if (!f.exists())
+                        f.createNewFile();
+                }catch (IOException e){}
+                Scanner s=new Scanner(System.in);
+                try {
+                    s = new Scanner(f);
+                }catch (FileNotFoundException e){}
+                while(s.hasNext()){
+                    Log.d("MOO", "cu");
+                    ImageText t = new ImageText();
+                    t.filepath = s.nextLine();
+                    t.text = s.nextLine();
+                    t.image = BitmapFactory.decodeFile(t.filepath);
+                    captionimg.add(t);
+                }
+                handler.sendEmptyMessage(0);
+                s.close();
             }
-            s.close();
-            adapter.notifyDataSetChanged();
-        }catch (IOException e){Log.d("MOO","cu2");
-        }
+        };
+            Thread thread = new Thread(runnable);
+            thread.start();
+
     }
     @Override
     protected void onStart() {
@@ -197,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
             Cursor cursor=getApplicationContext().getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,new String[]{MediaStore.Images.Media.DATA,MediaStore.Images.Media.DATE_ADDED,MediaStore.Images.ImageColumns.ORIENTATION},MediaStore.Images.Media.DATE_ADDED,null,"date_added DESC");
             cursor.moveToFirst();
             Uri uri = Uri.parse(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
+            cursor.close();
             String photopath=uri.toString();
             bit=BitmapFactory.decodeFile(photopath);
             if (bit != null) {
