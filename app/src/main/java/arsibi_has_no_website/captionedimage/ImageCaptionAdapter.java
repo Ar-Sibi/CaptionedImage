@@ -54,18 +54,11 @@ public class ImageCaptionAdapter extends BaseAdapter
         v= inflater.inflate(R.layout.image_text,parent,false);
         String s= captionimg.get(position).text;
         final Bitmap I=Bitmap.createScaledBitmap(captionimg.get(position).image,200,200,true);
-        captionimg.get(position).tv=((TextView)v.findViewById(R.id.caption));
         captionimg.get(position).img=((ImageView)v.findViewById(R.id.image));
-        captionimg.get(position).tv.setText(s);
         captionimg.get(position).img.setImageBitmap(I);
 
 
-        if(captionimg.get(position).checker==false)
-            captionimg.get(position).switchViews();
-        if(captionimg.get(position).checker==true){
-            captionimg.get(position).switchViews();
-            captionimg.get(position).switchViews();
-        }
+
         return v;
     }
 

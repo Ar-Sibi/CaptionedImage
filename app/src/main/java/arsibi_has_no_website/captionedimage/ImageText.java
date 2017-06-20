@@ -12,21 +12,9 @@ import android.widget.TextView;
 public class ImageText {
     Bitmap image;
     String text;
-    TextView tv;
     ImageView img;
     String filepath;
     boolean checker=true;
-    public void switchViews(){
-        if(checker==true){
-            img.setVisibility(View.INVISIBLE);
-            tv.setVisibility(View.VISIBLE);
-            checker=false;
-        }
-        else{
-            img.setVisibility(View.VISIBLE);
-            tv.setVisibility(View.INVISIBLE);
-            checker=true;
-        }
-    }
+
 }
 

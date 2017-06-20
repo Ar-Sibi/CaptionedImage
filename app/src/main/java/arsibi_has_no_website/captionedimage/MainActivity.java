@@ -8,8 +8,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -20,8 +18,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +28,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,15 +41,19 @@ import static android.os.Build.VERSION_CODES.M;
 public class MainActivity extends AppCompatActivity {
 
     static List<ImageText> captionimg= new ArrayList<>();
-    GridView lv;
+    GridView gv;
     RelativeLayout additionRelativeLayout;
     RelativeLayout intentRelativeLayout;
     RelativeLayout bottomLayout;
+    RelativeLayout showView;
+    TextView captionText;
+    ImageView selectedpic;
     EditText addtv;
     ImageCaptionAdapter adapter;
     int selectedindex=0;
     boolean delete=false;
     boolean crop=false;
+
     Handler handler=new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -68,18 +66,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getSupportActionBar().hide();
         getPermissions();
+        Log.d("MOO","creaate");
         bottomLayout=(RelativeLayout)findViewById(R.id.bottombuttonrellayout);
         additionRelativeLayout=(RelativeLayout)findViewById(R.id.additionrellayout);
         intentRelativeLayout=(RelativeLayout)findViewById(R.id.intentrelativelayout);
+        showView=(RelativeLayout)findViewById(R.id.showimgcaplayout);
+        captionText=(TextView)findViewById(R.id.caption_show);
+        selectedpic=(ImageView)findViewById(R.id.showimg);
         addtv=(EditText)findViewById(R.id.addedtext);
-        lv=(GridView)findViewById(R.id.image_caption_list);
+        gv=(GridView)findViewById(R.id.image_caption_list);
         adapter = new ImageCaptionAdapter(getApplicationContext());
-        lv.setAdapter(adapter);
+        gv.setAdapter(adapter);
+        captionimg=new ArrayList<>();
         if(getIntent().hasCategory(Intent.CATEGORY_LAUNCHER))
         loadData();
         else
             Log.d("MOO",getIntent().toString());
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        gv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(delete==true){
@@ -93,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                         selectedindex=position;
                     }
                     else
-                    captionimg.get(position).switchViews();
+                    showThis(captionimg.get(position));
                 }
                 crop=false;
                 delete=false;
@@ -145,7 +148,9 @@ public class MainActivity extends AppCompatActivity {
                     ImageText t = new ImageText();
                     t.filepath = s.nextLine();
                     t.text = s.nextLine();
-                    t.image = BitmapFactory.decodeFile(t.filepath);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inSampleSize=8;
+                    t.image = BitmapFactory.decodeFile(t.filepath,options);
                     captionimg.add(t);
                 }
                 handler.sendEmptyMessage(0);
@@ -159,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
     }
     @Override
     protected void onStop() {
@@ -178,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void addItems(View v){
+        closeView();
         intentRelativeLayout.setVisibility(LinearLayout.VISIBLE);
     }
     public void sendToCamera(View v){
@@ -221,7 +226,9 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = Uri.parse(cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA)));
             cursor.close();
             String photopath=uri.toString();
-            bit=BitmapFactory.decodeFile(photopath);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize=8;
+            bit=BitmapFactory.decodeFile(photopath,options);
             if (bit != null) {
                 ImageText t = new ImageText();
                 t.image = bit;
@@ -265,7 +272,8 @@ public class MainActivity extends AppCompatActivity {
         }catch (IOException e){}
         return file.getAbsolutePath();
     }
-    public void cropper(View v){
+    public void cropper(View v) {
+        closeView();
         crop=true;
     }
     public void getCaption(){
@@ -280,11 +288,24 @@ public class MainActivity extends AppCompatActivity {
         bottomLayout.setVisibility(LinearLayout.VISIBLE);
         adapter.notifyDataSetChanged();
     }
+    public void showThis(ImageText imageText){
+        showView.setVisibility(LinearLayout.VISIBLE);
+
+        selectedpic.setImageURI(Uri.fromFile(new File(imageText.filepath)));
+        captionText.setText(imageText.text);
+    }
+    public void closeView(View v){
+        closeView();
+    }
+    public void closeView(){
+        showView.setVisibility(LinearLayout.GONE);
+    }
     public void removeItems(View v){
-    delete=!delete;
-    if(delete==true)
-        Toast.makeText(getApplicationContext(),"Click on item to be deleted",Toast.LENGTH_SHORT).show();
-    else
-        Toast.makeText(getApplicationContext(),"Deletion Cancelled",Toast.LENGTH_SHORT).show();
+        closeView();
+        delete=!delete;
+        if(delete==true)
+            Toast.makeText(getApplicationContext(),"Click on item to be deleted",Toast.LENGTH_SHORT).show();
+        else
+            Toast.makeText(getApplicationContext(),"Deletion Cancelled",Toast.LENGTH_SHORT).show();
     }
 }
