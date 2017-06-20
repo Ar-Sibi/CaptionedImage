@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -46,7 +47,7 @@ import static android.os.Build.VERSION_CODES.M;
 public class MainActivity extends AppCompatActivity {
 
     static List<ImageText> captionimg= new ArrayList<>();
-    ListView lv;
+    GridView lv;
     RelativeLayout additionRelativeLayout;
     RelativeLayout intentRelativeLayout;
     RelativeLayout bottomLayout;
@@ -71,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
         additionRelativeLayout=(RelativeLayout)findViewById(R.id.additionrellayout);
         intentRelativeLayout=(RelativeLayout)findViewById(R.id.intentrelativelayout);
         addtv=(EditText)findViewById(R.id.addedtext);
-        lv=(ListView)findViewById(R.id.image_caption_list);
-        adapter = new ImageCaptionAdapter(getApplicationContext(),R.layout.image_text,captionimg);
+        lv=(GridView)findViewById(R.id.image_caption_list);
+        adapter = new ImageCaptionAdapter(getApplicationContext());
         lv.setAdapter(adapter);
         if(getIntent().hasCategory(Intent.CATEGORY_LAUNCHER))
         loadData();

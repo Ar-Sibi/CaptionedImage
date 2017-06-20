@@ -8,8 +8,8 @@
     tools:context="arsibi_has_no_website.captionedimage.MainActivity">
 
     <RelativeLayout
-        android:layout_width="match_parent"
         android:id="@+id/intentrelativelayout"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="0.1"
         android:visibility="gone">
@@ -30,8 +30,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignTop="@+id/camera"
-            android:onClick="sendToGallery"
             android:layout_marginEnd="81dp"
+            android:onClick="sendToGallery"
             app:srcCompat="@android:drawable/ic_menu_report_image" />
     </RelativeLayout>
 
@@ -39,8 +39,8 @@
         android:id="@+id/additionrellayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_weight="0.1">
+        android:layout_weight="0.1"
+        android:visibility="gone">
 
         <ImageButton
             android:id="@+id/textaddbutton"
@@ -63,11 +63,12 @@
             android:inputType="none|textPersonName" />
     </RelativeLayout>
 
-    <ListView
+    <GridView
         android:id="@+id/image_caption_list"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_weight="7"
+        android:numColumns="4"
         tools:layout_editor_absoluteX="8dp"
         tools:layout_editor_absoluteY="8dp" />
 

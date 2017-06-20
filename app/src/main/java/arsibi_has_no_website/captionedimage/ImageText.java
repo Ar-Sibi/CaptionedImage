@@ -18,13 +18,13 @@ public class ImageText {
     boolean checker=true;
     public void switchViews(){
         if(checker==true){
-            img.setVisibility(View.GONE);
+            img.setVisibility(View.INVISIBLE);
             tv.setVisibility(View.VISIBLE);
             checker=false;
         }
         else{
             img.setVisibility(View.VISIBLE);
-            tv.setVisibility(View.GONE);
+            tv.setVisibility(View.INVISIBLE);
             checker=true;
         }
     }
